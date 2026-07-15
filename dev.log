@@ -1,0 +1,11 @@
+
+> cubo-seat-selection@0.1.0 dev
+> next dev
+
+▲ Next.js 16.2.10 (Turbopack)
+- Local:         http://localhost:3000
+- Network:       http://192.168.0.112:3000
+- Environments: .env.local
+✓ Ready in 1062ms
+
+ GET / 200 in 978ms (next.js: 361ms, application-code: 617ms)
