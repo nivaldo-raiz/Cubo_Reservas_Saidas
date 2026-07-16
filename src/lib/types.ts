@@ -24,6 +24,7 @@ export interface Seat {
   numero: number;
   onibusId: string;
   ocupado: boolean;
+  bloqueado: boolean;
 }
 
 export interface Bus {

@@ -30,7 +30,7 @@ test("responsável pago confirma documentação e assento", async ({ page }) => 
   await page.getByRole("link", { name: "Escolher assento" }).first().click();
   await page.getByRole("checkbox").check();
   await page.getByRole("button", { name: "Continuar" }).click();
-  await page.getByRole("button", { name: "Assento 1, disponível" }).click();
+  await page.getByRole("button", { name: "Assento 03, disponível" }).click();
   await page.getByRole("button", { name: "Continuar" }).click();
   await page.getByRole("button", { name: "Confirmar assento" }).click();
   await page.getByRole("checkbox").check();

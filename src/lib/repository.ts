@@ -37,6 +37,7 @@ interface SeatRow {
   onibus_id: string;
   numero: number;
   crianca_id: string | null;
+  bloqueado: boolean;
 }
 
 interface OtpRow {
@@ -68,6 +69,7 @@ export class DomainError extends Error {
       | "PAYMENT_REQUIRED"
       | "CHILD_NOT_FOUND"
       | "SEAT_NOT_FOUND"
+      | "SEAT_BLOCKED"
       | "SEAT_TAKEN"
       | "CHILD_ALREADY_SEATED",
     message: string,
@@ -143,7 +145,7 @@ export async function getGuardianChildren(responsavelId: string): Promise<Guardi
 
   const { data: seatsData, error: seatsError } = await supabase
     .from("assentos")
-    .select("id,onibus_id,numero,crianca_id")
+    .select("id,onibus_id,numero,crianca_id,bloqueado")
     .in("crianca_id", children.map((child) => child.id));
   if (seatsError) throwDatabaseError(seatsError.message);
   const seats = (seatsData ?? []) as SeatRow[];
@@ -198,6 +200,7 @@ export async function getBusesWithSeats(): Promise<Bus[]> {
           numero: seat.numero,
           onibusId: seat.onibus_id,
           ocupado: seat.crianca_id !== null,
+          bloqueado: seat.bloqueado,
         })),
     }));
   }
@@ -206,7 +209,7 @@ export async function getBusesWithSeats(): Promise<Bus[]> {
   const [{ data: busesData, error: busesError }, { data: seatsData, error: seatsError }] =
     await Promise.all([
       supabase.from("onibus").select("id,nome,capacidade").order("nome"),
-      supabase.from("assentos").select("id,onibus_id,numero,crianca_id").order("numero"),
+      supabase.from("assentos").select("id,onibus_id,numero,crianca_id,bloqueado").order("numero"),
     ]);
   if (busesError) throwDatabaseError(busesError.message);
   if (seatsError) throwDatabaseError(seatsError.message);
@@ -222,6 +225,7 @@ export async function getBusesWithSeats(): Promise<Bus[]> {
         numero: seat.numero,
         onibusId: seat.onibus_id,
         ocupado: seat.crianca_id !== null,
+        bloqueado: seat.bloqueado,
       })),
   }));
 }
@@ -245,6 +249,9 @@ export async function reserveSeat(responsavelId: string, childId: string, seatId
       if (existing) {
         throw new DomainError("CHILD_ALREADY_SEATED", "A criança já possui um assento.");
       }
+      if (seat.bloqueado) {
+        throw new DomainError("SEAT_BLOCKED", "Este assento é reservado para a equipe responsável.");
+      }
       if (seat.crianca_id) {
         throw new DomainError("SEAT_TAKEN", "Este assento acabou de ser escolhido.");
       }
@@ -260,7 +267,7 @@ export async function reserveSeat(responsavelId: string, childId: string, seatId
   });
   if (!error) return data;
 
-  const code = error.message.match(/(PAYMENT_REQUIRED|CHILD_NOT_FOUND|SEAT_NOT_FOUND|SEAT_TAKEN|CHILD_ALREADY_SEATED)/)?.[1] as DomainError["code"] | undefined;
+  const code = error.message.match(/(PAYMENT_REQUIRED|CHILD_NOT_FOUND|SEAT_NOT_FOUND|SEAT_BLOCKED|SEAT_TAKEN|CHILD_ALREADY_SEATED)/)?.[1] as DomainError["code"] | undefined;
   if (code) throw new DomainError(code, error.message);
   throwDatabaseError(error.message);
 }

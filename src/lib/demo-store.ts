@@ -25,6 +25,7 @@ interface DemoSeatRow {
   onibus_id: string;
   numero: number;
   crianca_id: string | null;
+  bloqueado: boolean;
 }
 
 interface DemoConfirmationRow {
@@ -45,11 +46,13 @@ export interface DemoState {
 function makeSeats(busId: string, capacity: number, occupied: number[]) {
   return Array.from({ length: capacity }, (_, index): DemoSeatRow => {
     const numero = index + 1;
+    const bloqueado = [1, 2, 43, 44].includes(numero);
     return {
       id: `${busId}-assento-${numero}`,
       onibus_id: busId,
       numero,
-      crianca_id: occupied.includes(numero) ? `ocupante-demo-${busId}-${numero}` : null,
+      crianca_id: !bloqueado && occupied.includes(numero) ? `ocupante-demo-${busId}-${numero}` : null,
+      bloqueado,
     };
   });
 }
@@ -79,12 +82,12 @@ export function createDemoState(): DemoState {
       { id: "crianca-demo-bia", nome: "Beatriz Santos", responsavel_id: "responsavel-demo-pendente" },
     ],
     onibus: [
-      { id: "onibus-demo-1", nome: "Ônibus 1", capacidade: 40 },
-      { id: "onibus-demo-2", nome: "Ônibus 2", capacidade: 40 },
+      { id: "onibus-demo-1", nome: "Ônibus 1", capacidade: 44 },
+      { id: "onibus-demo-2", nome: "Ônibus 2", capacidade: 44 },
     ],
     assentos: [
-      ...makeSeats("onibus-demo-1", 40, [2, 7, 10, 18, 22, 31]),
-      ...makeSeats("onibus-demo-2", 40, [1, 4, 12, 16, 25, 33]),
+      ...makeSeats("onibus-demo-1", 44, [7, 10, 18, 22, 31]),
+      ...makeSeats("onibus-demo-2", 44, [4, 12, 16, 25, 33]),
     ],
     confirmacoes: [],
   };

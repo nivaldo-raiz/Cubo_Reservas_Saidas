@@ -152,11 +152,13 @@ p { line-height: 1.55; }
 .seat-button { width: 48px; height: 48px; padding: 0; border: 2px solid #5c6874; border-radius: 6px; color: var(--ink); background: #fff; font-weight: 800; cursor: pointer; }
 .seat-button:nth-child(4n + 3) { grid-column: 4; }
 .seat-button[data-state="occupied"] { color: #667085; border-color: #c6cdd2; background: #dfe4e7; cursor: not-allowed; }
+.seat-button[data-state="blocked"] { color: #7a4f01; border-color: #d9a441; background: #fff1c7; cursor: not-allowed; }
 .seat-button[data-state="selected"] { color: #fff; border-color: var(--purple-dark); background: var(--purple); }
 .seat-legend { display: flex; margin-bottom: 22px; flex-wrap: wrap; gap: 18px; justify-content: center; color: var(--muted); font-size: 13px; }
 .seat-legend span { display: inline-flex; align-items: center; gap: 7px; }
 .legend-swatch { width: 18px; height: 18px; border: 2px solid #5c6874; border-radius: 4px; background: #fff; }
 .legend-swatch--occupied { border-color: #c6cdd2; background: #dfe4e7; }
+.legend-swatch--blocked { border-color: #d9a441; background: #fff1c7; }
 .legend-swatch--selected { border-color: var(--purple-dark); background: var(--purple); }
 .flow-actions { display: flex; margin-top: 24px; justify-content: flex-end; gap: 12px; }
 .summary-list { display: grid; margin: 24px 0; grid-template-columns: repeat(3, 1fr); gap: 12px; }
