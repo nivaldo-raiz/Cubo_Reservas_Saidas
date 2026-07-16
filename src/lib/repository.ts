@@ -39,15 +39,6 @@ interface SeatRow {
   crianca_id: string | null;
 }
 
-interface OtpRow {
-  id: string;
-  responsavel_id: string;
-  codigo_hash: string;
-  expira_em: string;
-  usado_em: string | null;
-  tentativas: number;
-}
-
 function mapGuardian(row: GuardianRow): Guardian {
   return {
     id: row.id,
@@ -351,78 +342,6 @@ export async function adminExists(id: string) {
     .from("admins")
     .select("id")
     .eq("id", id)
-    .maybeSingle();
-  if (error) throwDatabaseError(error.message);
-  return Boolean(data);
-}
-
-export async function createOtpRecord(
-  responsavelId: string,
-  codeHash: string,
-  expiresAt: string,
-  ipHash: string | null,
-) {
-  if (env.demoMode) return true;
-  const supabase = getSupabaseAdmin();
-  const tenMinutesAgo = new Date(Date.now() - 10 * 60 * 1000).toISOString();
-  const { count, error: countError } = await supabase
-    .from("codigos_acesso")
-    .select("id", { count: "exact", head: true })
-    .eq("responsavel_id", responsavelId)
-    .gte("created_at", tenMinutesAgo);
-  if (countError) throwDatabaseError(countError.message);
-  if ((count ?? 0) >= 3) return false;
-
-  const now = new Date().toISOString();
-  const { error: invalidationError } = await supabase
-    .from("codigos_acesso")
-    .update({ usado_em: now })
-    .eq("responsavel_id", responsavelId)
-    .is("usado_em", null);
-  if (invalidationError) throwDatabaseError(invalidationError.message);
-
-  const { error } = await supabase.from("codigos_acesso").insert({
-    responsavel_id: responsavelId,
-    codigo_hash: codeHash,
-    expira_em: expiresAt,
-    ip_hash: ipHash,
-  });
-  if (error) throwDatabaseError(error.message);
-  return true;
-}
-
-export async function getLatestOtp(responsavelId: string): Promise<OtpRow | null> {
-  if (env.demoMode) return null;
-  const { data, error } = await getSupabaseAdmin()
-    .from("codigos_acesso")
-    .select("id,responsavel_id,codigo_hash,expira_em,usado_em,tentativas")
-    .eq("responsavel_id", responsavelId)
-    .is("usado_em", null)
-    .order("created_at", { ascending: false })
-    .limit(1)
-    .maybeSingle();
-  if (error) throwDatabaseError(error.message);
-  return data ? (data as OtpRow) : null;
-}
-
-export async function incrementOtpAttempts(id: string) {
-  if (env.demoMode) return;
-  const { error } = await getSupabaseAdmin().rpc("incrementar_tentativa_codigo", {
-    p_codigo_id: id,
-  });
-  if (error) throwDatabaseError(error.message);
-}
-
-export async function consumeOtp(id: string) {
-  if (env.demoMode) return true;
-  const { data, error } = await getSupabaseAdmin()
-    .from("codigos_acesso")
-    .update({ usado_em: new Date().toISOString() })
-    .eq("id", id)
-    .is("usado_em", null)
-    .lt("tentativas", 5)
-    .gt("expira_em", new Date().toISOString())
-    .select("id")
     .maybeSingle();
   if (error) throwDatabaseError(error.message);
   return Boolean(data);

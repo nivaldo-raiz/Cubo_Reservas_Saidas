@@ -1,6 +1,6 @@
 import { createHmac, timingSafeEqual } from "node:crypto";
 
-export type SessionRole = "guardian" | "admin" | "otp";
+export type SessionRole = "guardian" | "admin";
 
 interface SessionPayload {
   sub: string;

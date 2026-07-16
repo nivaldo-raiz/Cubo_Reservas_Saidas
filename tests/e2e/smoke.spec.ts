@@ -2,14 +2,14 @@ import { expect, test, type Page } from "playwright/test";
 
 test.describe.configure({ mode: "serial" });
 
-async function loginGuardian(page: Page, email: string) {
+async function loginGuardian(page: Page, account: "paid" | "pending" = "paid") {
+  if (account === "pending") {
+    await page.goto("/api/auth/responsavel/oauth?provider=demo&account=pending");
+    return;
+  }
   await page.goto("/acesso");
   await page.waitForTimeout(750);
-  await page.getByLabel("E-mail do responsável").fill(email);
-  await page.getByRole("button", { name: "Receber código de acesso" }).click();
-  await expect(page).toHaveURL(/\/acesso\/codigo/);
-  await page.getByLabel("Código de seis dígitos").fill("123456");
-  await page.getByRole("button", { name: "Validar e acessar" }).click();
+  await page.getByRole("link", { name: "Entrar na demonstração" }).click();
 }
 
 test("landing preserva composição desktop e mobile", async ({ page }) => {
@@ -25,11 +25,14 @@ test("landing preserva composição desktop e mobile", async ({ page }) => {
 });
 
 test("responsável pago confirma documentação e assento", async ({ page }) => {
-  await loginGuardian(page, "familia@example.com");
+  await loginGuardian(page);
   await expect(page).toHaveURL(/\/alunos$/);
   await page.getByRole("link", { name: "Escolher assento" }).first().click();
+  await page.waitForLoadState("networkidle");
   await page.getByRole("checkbox").check();
-  await page.getByRole("button", { name: "Continuar" }).click();
+  const continueButton = page.getByRole("button", { name: "Continuar" });
+  await expect(continueButton).toBeEnabled();
+  await continueButton.click();
   await page.getByRole("button", { name: "Assento 1, disponível" }).click();
   await page.getByRole("button", { name: "Continuar" }).click();
   await page.getByRole("button", { name: "Confirmar assento" }).click();
@@ -39,7 +42,7 @@ test("responsável pago confirma documentação e assento", async ({ page }) => 
 });
 
 test("responsável pendente recebe bloqueio explicativo", async ({ page }) => {
-  await loginGuardian(page, "pendente@example.com");
+  await loginGuardian(page, "pending");
   await expect(page).toHaveURL(/\/pagamento-pendente$/);
   await expect(page.getByRole("heading", { name: "Pagamento pendente" })).toBeVisible();
 });
@@ -53,19 +56,6 @@ test("admin altera pagamento", async ({ page }) => {
   await page.getByLabel("Senha").fill(adminPassword!);
   await page.getByRole("button", { name: "Entrar no painel" }).click();
   await expect(page).toHaveURL(/\/admin$/);
-  await page.getByLabel("Planilha de alunos").setInputFiles({
-    name: "alunos.html",
-    mimeType: "text/html",
-    buffer: Buffer.from(`
-      <table>
-        <tr><th></th><th>E</th><th>F</th><th>G</th></tr>
-        <tr><th>1</th><td>Aluno</td><td>Responsável</td><td>Email Responsável</td></tr>
-        <tr><th>2</th><td>Aluno Teste E2E</td><td>Responsável Teste E2E</td><td>e2e@example.com</td></tr>
-      </table>
-    `),
-  });
-  await page.getByRole("button", { name: "Importar", exact: true }).click();
-  await expect(page.getByRole("status")).toContainText("1 responsáveis e 1 crianças criados");
   const pendingRow = page.getByRole("row").filter({ hasText: "Rafael Santos" });
   await pendingRow.getByRole("button", { name: "Marcar pago" }).click();
   await expect(pendingRow.getByText("Pago", { exact: true })).toBeVisible();

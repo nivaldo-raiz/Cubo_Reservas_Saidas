@@ -4,7 +4,6 @@ import { signToken, verifyToken } from "@/lib/auth/token";
 
 const GUARDIAN_COOKIE = "cubo_guardian_session";
 const ADMIN_COOKIE = "cubo_admin_session";
-const OTP_COOKIE = "cubo_otp_challenge";
 
 const cookieBase = {
   httpOnly: true,
@@ -13,14 +12,28 @@ const cookieBase = {
   path: "/",
 };
 
-export async function setGuardianSession(responsavelId: string) {
+export function createGuardianSessionCookie(responsavelId: string) {
   const ttl = env.guardianSessionDays * 24 * 60 * 60;
   const secret = requireSecret(env.guardianSessionSecret, "GUARDIAN_SESSION_SECRET");
+  return {
+    name: GUARDIAN_COOKIE,
+    value: signToken(responsavelId, "guardian", secret, ttl),
+    options: { ...cookieBase, maxAge: ttl },
+  };
+}
+
+export function clearGuardianSessionCookie() {
+  return {
+    name: GUARDIAN_COOKIE,
+    value: "",
+    options: { ...cookieBase, maxAge: 0 },
+  };
+}
+
+export async function setGuardianSession(responsavelId: string) {
+  const session = createGuardianSessionCookie(responsavelId);
   const jar = await cookies();
-  jar.set(GUARDIAN_COOKIE, signToken(responsavelId, "guardian", secret, ttl), {
-    ...cookieBase,
-    maxAge: ttl,
-  });
+  jar.set(session.name, session.value, session.options);
 }
 
 export async function readGuardianSession() {
@@ -43,27 +56,6 @@ export async function readAdminSession() {
   const secret = requireSecret(env.adminSessionSecret, "ADMIN_SESSION_SECRET");
   const jar = await cookies();
   return verifyToken(jar.get(ADMIN_COOKIE)?.value, "admin", secret)?.sub ?? null;
-}
-
-export async function setOtpChallenge(email: string) {
-  const ttl = 10 * 60;
-  const secret = requireSecret(env.guardianSessionSecret, "GUARDIAN_SESSION_SECRET");
-  const jar = await cookies();
-  jar.set(OTP_COOKIE, signToken(email, "otp", secret, ttl), {
-    ...cookieBase,
-    maxAge: ttl,
-  });
-}
-
-export async function readOtpChallenge() {
-  const secret = requireSecret(env.guardianSessionSecret, "GUARDIAN_SESSION_SECRET");
-  const jar = await cookies();
-  return verifyToken(jar.get(OTP_COOKIE)?.value, "otp", secret)?.sub ?? null;
-}
-
-export async function clearOtpChallenge() {
-  const jar = await cookies();
-  jar.delete(OTP_COOKIE);
 }
 
 export async function clearGuardianSession() {

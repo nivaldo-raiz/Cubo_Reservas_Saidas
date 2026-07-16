@@ -16,7 +16,7 @@ const highlights = [
   {
     icon: ShieldCheck,
     title: "Acesso protegido",
-    description: "Código temporário enviado ao e-mail cadastrado.",
+    description: "Identidade confirmada por Google ou Microsoft.",
   },
 ];
 
@@ -60,8 +60,8 @@ export default function HomePage() {
               </p>
             </div>
             <ol>
-              <li>Entre com o e-mail cadastrado</li>
-              <li>Valide o código temporário</li>
+              <li>Entre com Google ou Microsoft</li>
+              <li>Confirme o e-mail cadastrado</li>
               <li>Escolha e confirme o assento</li>
               <li>Receba sua confirmação</li>
             </ol>

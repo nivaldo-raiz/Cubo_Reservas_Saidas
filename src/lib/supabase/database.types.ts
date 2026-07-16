@@ -28,17 +28,6 @@ type TeacherRow = {
   created_at: string;
   updated_at: string;
 };
-type OtpRow = {
-  id: string;
-  responsavel_id: string;
-  codigo_hash: string;
-  expira_em: string;
-  usado_em: string | null;
-  tentativas: number;
-  ip_hash: string | null;
-  created_at: string;
-};
-
 export type Database = {
   public: {
     Tables: {
@@ -91,28 +80,12 @@ export type Database = {
         Update: Partial<Omit<TeacherRow, "id">>;
         Relationships: [];
       };
-      codigos_acesso: {
-        Row: OtpRow;
-        Insert: Pick<OtpRow, "responsavel_id" | "codigo_hash" | "expira_em"> & {
-          id?: string;
-          usado_em?: string | null;
-          tentativas?: number;
-          ip_hash?: string | null;
-          created_at?: string;
-        };
-        Update: Partial<Omit<OtpRow, "id">>;
-        Relationships: [];
-      };
     };
     Views: { [_ in never]: never };
     Functions: {
       reservar_assento: {
         Args: { p_responsavel_id: string; p_crianca_id: string; p_assento_id: string };
         Returns: Json;
-      };
-      incrementar_tentativa_codigo: {
-        Args: { p_codigo_id: string };
-        Returns: undefined;
       };
       importar_responsaveis_criancas: {
         Args: { p_registros: Json };

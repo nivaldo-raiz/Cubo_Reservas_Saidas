@@ -6,6 +6,8 @@
 **Responsável de negócio:** Diretoria Executiva — Cubo Global School  
 **Produto:** Plataforma web de escolha antecipada de assentos e registro de orientações de viagem
 
+> **Atualização aprovada em 16/07/2026:** os requisitos de autenticação por OTP foram substituídos por OAuth Google/Microsoft. O provedor confirma identidade e e-mail; o backend autoriza somente e-mails previamente cadastrados em `responsaveis` e então cria a sessão interna.
+
 ---
 
 # 1. Resumo executivo

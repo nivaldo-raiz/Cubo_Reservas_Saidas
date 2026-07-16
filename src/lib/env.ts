@@ -18,16 +18,10 @@ export const env = {
     read("SUPABASE_PUBLISHABLE_KEY"),
   supabaseServiceRoleKey:
     read("SUPABASE_SERVICE_ROLE_KEY") ?? read("SUPABASE_SECRET_KEY"),
-  otpPepper: read("OTP_PEPPER"),
-  guardianSessionSecret:
-    read("GUARDIAN_SESSION_SECRET") ?? read("OTP_PEPPER"),
-  adminSessionSecret:
-    read("ADMIN_SESSION_SECRET") ??
-    (read("DEMO_MODE") === "true" ? read("OTP_PEPPER") : undefined),
+  guardianSessionSecret: read("GUARDIAN_SESSION_SECRET"),
+  adminSessionSecret: read("ADMIN_SESSION_SECRET"),
   guardianSessionDays: readNumber("GUARDIAN_SESSION_DAYS", 30),
   adminSessionHours: readNumber("ADMIN_SESSION_HOURS", 12),
-  resendApiKey: read("RESEND_API_KEY"),
-  emailFrom: read("EMAIL_FROM"),
   demoMode: read("DEMO_MODE") === "true",
   demoAdminEmail: read("DEMO_ADMIN_EMAIL"),
   demoAdminPassword: read("DEMO_ADMIN_PASSWORD"),

@@ -9,6 +9,8 @@ Não entregue apenas wireframes, páginas estáticas ou uma demonstração visua
 
 Use o arquivo `PRD_Cubo_NR_Seat_Selection.md` como fonte principal de requisitos de produto. Quando houver conflito entre este prompt e o PRD, priorize o PRD e registre a divergência.
 
+> **Atualização aprovada em 16/07/2026:** toda orientação abaixo sobre OTP/Resend foi substituída por OAuth Google/Microsoft com autorização server-side pela tabela `responsaveis`.
+
 ---
 
 # 1. PRINCÍPIO CENTRAL DO PRODUTO
