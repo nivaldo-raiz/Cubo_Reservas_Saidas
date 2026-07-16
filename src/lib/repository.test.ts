@@ -59,6 +59,17 @@ describe("regras de assento e pagamento", () => {
     ).rejects.toMatchObject({ code: "CHILD_ALREADY_SEATED" });
   });
 
+  it("impede reserva no ônibus diferente do designado para a criança", async () => {
+    const { reserveSeat } = await import("@/lib/repository");
+    await expect(
+      reserveSeat(
+        "responsavel-demo-pago",
+        "crianca-demo-ana",
+        "onibus-demo-2-assento-3",
+      ),
+    ).rejects.toMatchObject({ code: "BUS_MISMATCH" });
+  });
+
   it.each([1, 2, 43, 44])("mantém o assento %i reservado para a equipe", async (numero) => {
     const { reserveSeat } = await import("@/lib/repository");
     await expect(
@@ -82,5 +93,14 @@ describe("regras de assento e pagamento", () => {
         1, 2, 43, 44,
       ]);
     }
+  });
+
+  it("mostra somente o ônibus atribuído à criança", async () => {
+    const { getBusesWithSeats, getGuardianChild } = await import("@/lib/repository");
+    const child = await getGuardianChild("responsavel-demo-pago", "crianca-demo-lucas");
+    const buses = await getBusesWithSeats(child?.onibusId);
+
+    expect(child?.onibusId).toBe("onibus-demo-2");
+    expect(buses.map((bus) => bus.nome)).toEqual(["Ônibus B"]);
   });
 });

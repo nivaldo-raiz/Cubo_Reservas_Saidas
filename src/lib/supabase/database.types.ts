@@ -8,7 +8,7 @@ type GuardianRow = {
   created_at: string;
 };
 
-type ChildRow = { id: string; nome: string; responsavel_id: string };
+type ChildRow = { id: string; nome: string; responsavel_id: string; onibus_id: string };
 type BusRow = { id: string; nome: string; capacidade: number };
 type SeatRow = {
   id: string;

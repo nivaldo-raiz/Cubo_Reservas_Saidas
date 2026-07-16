@@ -78,7 +78,9 @@ export function SeatSelectionFlow({ child, initialBuses }: SeatSelectionFlowProp
       const message = caught instanceof Error ? caught.message : "Não foi possível continuar.";
       setError(message);
       if (step === 2) {
-        const response = await fetch("/api/responsavel/assentos");
+        const response = await fetch(
+          `/api/responsavel/assentos?criancaId=${encodeURIComponent(child.id)}`,
+        );
         if (response.ok) {
           const body = (await response.json()) as { onibus: Bus[] };
           setBuses(body.onibus);
@@ -126,8 +128,8 @@ export function SeatSelectionFlow({ child, initialBuses }: SeatSelectionFlowProp
         {step === 1 && selectedBus ? (
           <>
             <p className="panel__lead">
-              Selecione um ônibus e um assento disponível. A disponibilidade será validada
-              novamente ao confirmar.
+              Ônibus definido para {child.nome}: <strong>{selectedBus.nome}</strong>. Selecione
+              um assento disponível. A disponibilidade será validada novamente ao confirmar.
             </p>
             <div className="bus-tabs" role="tablist" aria-label="Ônibus disponíveis">
               {buses.map((bus) => (
