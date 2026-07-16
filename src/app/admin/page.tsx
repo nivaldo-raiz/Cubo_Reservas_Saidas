@@ -1,6 +1,5 @@
 import { LogoutButton } from "@/components/logout-button";
 import { PaymentTable } from "@/components/payment-table";
-import { StudentImport } from "@/components/student-import";
 import { requireAdmin } from "@/lib/auth/guards";
 import { listGuardians } from "@/lib/repository";
 
@@ -16,7 +15,6 @@ export default async function AdminPage() {
         <div className="page-heading">
           <div><p className="eyebrow">Controle de acesso</p><h1>Pagamentos</h1><p>A alteração libera ou bloqueia o responsável imediatamente.</p></div>
         </div>
-        <StudentImport />
         <PaymentTable initialGuardians={guardians} />
       </section>
     </main>

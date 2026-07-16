@@ -53,9 +53,3 @@ export interface AdminAccount {
   email: string;
   senhaHash: string;
 }
-
-export interface StudentImportResult {
-  responsaveisCriados: number;
-  criancasCriadas: number;
-  registrosExistentes: number;
-}

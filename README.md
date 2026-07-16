@@ -42,11 +42,9 @@ Remove-Item Env:ADMIN_BOOTSTRAP_PASSWORD
 
 A senha é armazenada apenas como hash bcrypt. O login administrativo fica em `/admin-acesso`.
 
-## Importar alunos
+## Dados iniciais
 
-No painel `/admin`, envie o arquivo HTML exportado da planilha de alunos. O importador utiliza somente `Aluno`, `Responsável` e `Email Responsável`; CPF, RG, telefones e nascimento não são armazenados. Novos responsáveis entram com pagamento `pendente` e reimportar o mesmo arquivo não duplica registros.
-
-A planilha de professores não é importada neste MVP porque o modelo aprovado não possui entidade de professores nem assentos de equipe.
+Alunos, responsáveis e professores são carregados diretamente no Supabase durante a preparação do ambiente. A aplicação entregue ao cliente não expõe importação de planilhas. Para o fluxo de acesso dos responsáveis, são armazenados somente o nome do aluno, o nome do responsável e o e-mail do responsável.
 
 ## Fluxo de acesso
 

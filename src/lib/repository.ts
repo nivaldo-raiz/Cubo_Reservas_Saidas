@@ -2,7 +2,6 @@ import { randomUUID } from "node:crypto";
 import { env } from "@/lib/env";
 import { getDemoState, withDemoReservationLock } from "@/lib/demo-store";
 import { getSupabaseAdmin } from "@/lib/supabase/admin";
-import type { StudentImportRecord } from "@/lib/import/students";
 import type {
   AdminAccount,
   Bus,
@@ -11,7 +10,6 @@ import type {
   GuardianChild,
   GuardianListItem,
   PaymentStatus,
-  StudentImportResult,
 } from "@/lib/types";
 
 interface GuardianRow {
@@ -428,71 +426,4 @@ export async function consumeOtp(id: string) {
     .maybeSingle();
   if (error) throwDatabaseError(error.message);
   return Boolean(data);
-}
-
-export async function importStudents(
-  records: StudentImportRecord[],
-): Promise<StudentImportResult> {
-  if (env.demoMode) {
-    const state = getDemoState();
-    let responsaveisCriados = 0;
-    let criancasCriadas = 0;
-    let registrosExistentes = 0;
-
-    for (const record of records) {
-      let guardian = state.responsaveis.find(
-        (item) => item.email === record.responsavelEmail,
-      );
-      if (!guardian) {
-        guardian = {
-          id: randomUUID(),
-          nome: record.responsavelNome,
-          email: record.responsavelEmail,
-          status_pagamento: "pendente",
-          created_at: new Date().toISOString(),
-        };
-        state.responsaveis.push(guardian);
-        responsaveisCriados += 1;
-      }
-
-      const exists = state.criancas.some(
-        (child) =>
-          child.responsavel_id === guardian.id &&
-          child.nome.toLocaleLowerCase("pt-BR") ===
-            record.criancaNome.toLocaleLowerCase("pt-BR"),
-      );
-      if (exists) {
-        registrosExistentes += 1;
-      } else {
-        state.criancas.push({
-          id: randomUUID(),
-          nome: record.criancaNome,
-          responsavel_id: guardian.id,
-        });
-        criancasCriadas += 1;
-      }
-    }
-
-    return { responsaveisCriados, criancasCriadas, registrosExistentes };
-  }
-
-  const payload = records.map((record) => ({
-    crianca_nome: record.criancaNome,
-    responsavel_nome: record.responsavelNome,
-    responsavel_email: record.responsavelEmail,
-  }));
-  const { data, error } = await getSupabaseAdmin().rpc("importar_responsaveis_criancas", {
-    p_registros: payload,
-  });
-  if (error) throwDatabaseError(error.message);
-  const result = data as {
-    responsaveis_criados: number;
-    criancas_criadas: number;
-    registros_existentes: number;
-  };
-  return {
-    responsaveisCriados: result.responsaveis_criados,
-    criancasCriadas: result.criancas_criadas,
-    registrosExistentes: result.registros_existentes,
-  };
 }
