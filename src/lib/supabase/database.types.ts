@@ -10,7 +10,13 @@ type GuardianRow = {
 
 type ChildRow = { id: string; nome: string; responsavel_id: string };
 type BusRow = { id: string; nome: string; capacidade: number };
-type SeatRow = { id: string; onibus_id: string; numero: number; crianca_id: string | null };
+type SeatRow = {
+  id: string;
+  onibus_id: string;
+  numero: number;
+  crianca_id: string | null;
+  bloqueado: boolean;
+};
 type ConfirmationRow = {
   id: string;
   responsavel_id: string;
@@ -51,7 +57,11 @@ export type Database = {
       };
       assentos: {
         Row: SeatRow;
-        Insert: Omit<SeatRow, "id" | "crianca_id"> & { id?: string; crianca_id?: string | null };
+        Insert: Omit<SeatRow, "id" | "crianca_id" | "bloqueado"> & {
+          id?: string;
+          crianca_id?: string | null;
+          bloqueado?: boolean;
+        };
         Update: Partial<Omit<SeatRow, "id">>;
         Relationships: [];
       };

@@ -14,16 +14,19 @@ on conflict (id) do nothing;
 
 insert into public.onibus (id, nome, capacidade)
 values
-  ('30000000-0000-4000-8000-000000000001', 'Ônibus 1', 40),
-  ('30000000-0000-4000-8000-000000000002', 'Ônibus 2', 40)
-on conflict (id) do nothing;
+  ('30000000-0000-4000-8000-000000000001', 'Ônibus 1', 44),
+  ('30000000-0000-4000-8000-000000000002', 'Ônibus 2', 44)
+on conflict (id) do update
+set nome = excluded.nome,
+    capacidade = excluded.capacidade;
 
-insert into public.assentos (onibus_id, numero)
-select bus.id, seat.numero
+insert into public.assentos (onibus_id, numero, bloqueado)
+select bus.id, seat.numero, seat.numero in (1, 2, 43, 44)
 from (
   values
     ('30000000-0000-4000-8000-000000000001'::uuid),
     ('30000000-0000-4000-8000-000000000002'::uuid)
 ) as bus(id)
-cross join generate_series(1, 40) as seat(numero)
-on conflict (onibus_id, numero) do nothing;
+cross join generate_series(1, 44) as seat(numero)
+on conflict (onibus_id, numero) do update
+set bloqueado = excluded.bloqueado;

@@ -146,25 +146,38 @@ export function SeatSelectionFlow({ child, initialBuses }: SeatSelectionFlowProp
             <div className="seat-legend" aria-label="Legenda dos assentos">
               <span><i className="legend-swatch" aria-hidden="true" /> Disponível</span>
               <span><i className="legend-swatch legend-swatch--occupied" aria-hidden="true" /> Ocupado</span>
+              <span><i className="legend-swatch legend-swatch--blocked" aria-hidden="true" /> Equipe</span>
               <span><i className="legend-swatch legend-swatch--selected" aria-hidden="true" /> Selecionado</span>
             </div>
             <div className="seat-map">
               <div className="bus-front">Frente do ônibus e motorista</div>
               <div className="seat-grid">
                 {selectedBus.assentos.map((seat) => {
-                  const state = seat.ocupado ? "occupied" : seat.id === seatId ? "selected" : "available";
+                  const numeroExibido = String(seat.numero).padStart(2, "0");
+                  const state = seat.bloqueado
+                    ? "blocked"
+                    : seat.ocupado
+                      ? "occupied"
+                      : seat.id === seatId
+                        ? "selected"
+                        : "available";
+                  const status = seat.bloqueado
+                    ? "reservado para a equipe"
+                    : seat.ocupado
+                      ? "ocupado"
+                      : "disponível";
                   return (
                     <button
                       className="seat-button"
                       data-state={state}
-                      disabled={seat.ocupado}
+                      disabled={seat.ocupado || seat.bloqueado}
                       key={seat.id}
                       type="button"
                       aria-pressed={seat.id === seatId}
-                      aria-label={`Assento ${seat.numero}, ${seat.ocupado ? "ocupado" : "disponível"}`}
+                      aria-label={`Assento ${numeroExibido}, ${status}`}
                       onClick={() => setSeatId(seat.id)}
                     >
-                      {seat.numero}
+                      {numeroExibido}
                     </button>
                   );
                 })}

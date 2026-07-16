@@ -26,6 +26,9 @@ export async function POST(request: Request) {
     return Response.json({ ok: true }, { status: 201 });
   } catch (error) {
     if (error instanceof DomainError) {
+      if (error.code === "SEAT_BLOCKED") {
+        return errorResponse("Este assento é reservado para a equipe responsável.", 409);
+      }
       const conflict = error.code === "SEAT_TAKEN" || error.code === "CHILD_ALREADY_SEATED";
       return errorResponse(
         conflict
