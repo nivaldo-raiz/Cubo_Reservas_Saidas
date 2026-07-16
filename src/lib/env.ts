@@ -11,9 +11,13 @@ const readNumber = (name: string, fallback: number) => {
 export const env = {
   appEnv: read("APP_ENV") ?? "local",
   appUrl: read("NEXT_PUBLIC_APP_URL") ?? "http://localhost:3000",
-  supabaseUrl: read("NEXT_PUBLIC_SUPABASE_URL"),
-  supabaseAnonKey: read("NEXT_PUBLIC_SUPABASE_ANON_KEY"),
-  supabaseServiceRoleKey: read("SUPABASE_SERVICE_ROLE_KEY"),
+  supabaseUrl: read("NEXT_PUBLIC_SUPABASE_URL") ?? read("SUPABASE_URL"),
+  supabaseAnonKey:
+    read("NEXT_PUBLIC_SUPABASE_ANON_KEY") ??
+    read("NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY") ??
+    read("SUPABASE_PUBLISHABLE_KEY"),
+  supabaseServiceRoleKey:
+    read("SUPABASE_SERVICE_ROLE_KEY") ?? read("SUPABASE_SECRET_KEY"),
   otpPepper: read("OTP_PEPPER"),
   guardianSessionSecret:
     read("GUARDIAN_SESSION_SECRET") ?? read("OTP_PEPPER"),

@@ -21,8 +21,8 @@ O modo demo usa somente dados fictícios em memória. Não deve ser ativado em p
 ## Banco Supabase
 
 1. Crie um projeto Supabase.
-2. Configure `NEXT_PUBLIC_SUPABASE_URL` e `SUPABASE_SERVICE_ROLE_KEY` no servidor.
-3. Execute `supabase/migrations/0001_access_and_seats.sql` pelo Supabase CLI ou SQL Editor.
+2. Configure `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` e `SUPABASE_SECRET_KEY` no servidor. Os nomes legados `NEXT_PUBLIC_SUPABASE_ANON_KEY` e `SUPABASE_SERVICE_ROLE_KEY` também são aceitos.
+3. Aplique as migrations de `supabase/migrations` pela integração do GitHub ou pelo Supabase CLI.
 4. Opcionalmente, execute `supabase/seed.sql` apenas em desenvolvimento.
 5. Defina `DEMO_MODE=false`, `OTP_PEPPER`, `GUARDIAN_SESSION_SECRET`, `ADMIN_SESSION_SECRET`, `RESEND_API_KEY` e `EMAIL_FROM`.
 
