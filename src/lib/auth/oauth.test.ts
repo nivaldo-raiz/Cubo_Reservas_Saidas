@@ -12,4 +12,9 @@ describe("OAuth de responsáveis", () => {
   it("explica quando o e-mail confirmado não está autorizado", () => {
     expect(oauthErrorMessage("nao-autorizado")).toContain("lista de responsáveis");
   });
+
+  it("exige a pré-validação e o mesmo e-mail no provedor", () => {
+    expect(oauthErrorMessage("preautorizacao")).toContain("valide seu e-mail");
+    expect(oauthErrorMessage("email-diferente")).toContain("diferente");
+  });
 });

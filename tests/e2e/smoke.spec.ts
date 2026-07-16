@@ -3,12 +3,13 @@ import { expect, test, type Page } from "playwright/test";
 test.describe.configure({ mode: "serial" });
 
 async function loginGuardian(page: Page, account: "paid" | "pending" = "paid") {
-  if (account === "pending") {
-    await page.goto("/api/auth/responsavel/oauth?provider=demo&account=pending");
-    return;
-  }
   await page.goto("/acesso");
   await page.waitForTimeout(750);
+  await page.getByLabel("E-mail do responsável").fill(
+    account === "pending" ? "pendente@example.com" : "familia@example.com",
+  );
+  await page.getByRole("button", { name: "Continuar" }).click();
+  await expect(page.getByText("E-mail autorizado:")).toBeVisible();
   await page.getByRole("link", { name: "Entrar na demonstração" }).click();
 }
 
@@ -22,6 +23,15 @@ test("landing preserva composição desktop e mobile", async ({ page }) => {
   await page.reload();
   await expect(page.getByText("18 a 22 de novembro")).toBeVisible();
   await page.screenshot({ path: "tmp/home-mobile.png", fullPage: true });
+});
+
+test("e-mail não cadastrado não libera autenticação", async ({ page }) => {
+  await page.goto("/acesso");
+  await page.waitForTimeout(750);
+  await page.getByLabel("E-mail do responsável").fill("nao-cadastrado@example.com");
+  await page.getByRole("button", { name: "Continuar" }).click();
+  await expect(page.getByText("Você não é um responsável autorizado.", { exact: true })).toBeVisible();
+  await expect(page.getByRole("link", { name: "Entrar na demonstração" })).toHaveCount(0);
 });
 
 test("responsável pago confirma documentação e assento", async ({ page }) => {

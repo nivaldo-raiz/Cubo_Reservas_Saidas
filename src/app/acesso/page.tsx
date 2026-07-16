@@ -14,9 +14,9 @@ export default async function AccessPage({
       <section className="app-background">
         <div className="auth-shell panel">
           <p className="eyebrow">Acesso do responsável</p>
-          <h1>Entre com sua conta</h1>
+          <h1>Informe seu e-mail</h1>
           <p className="panel__lead">
-            Use Google ou Microsoft com o mesmo e-mail informado na inscrição da viagem.
+            Vamos verificar seu cadastro antes de liberar a autenticação com Google ou Microsoft.
           </p>
           <OAuthAccess demoMode={env.demoMode} errorCode={erro} />
         </div>

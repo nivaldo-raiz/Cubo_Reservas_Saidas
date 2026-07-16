@@ -1,7 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import {
+  clearGuardianPreAuthCookie,
   clearGuardianSessionCookie,
   createGuardianSessionCookie,
+  guardianPreAuthCookieName,
+  readGuardianPreAuthCookie,
 } from "@/lib/auth/cookies";
 import { env } from "@/lib/env";
 import { normalizeEmail } from "@/lib/format";
@@ -22,6 +25,14 @@ export async function GET(request: NextRequest) {
   if (!code) return response;
 
   try {
+    const preAuthEmail = readGuardianPreAuthCookie(
+      request.cookies.get(guardianPreAuthCookieName())?.value,
+    );
+    if (!preAuthEmail) {
+      response.headers.set("location", destination("/acesso", "preautorizacao").toString());
+      return response;
+    }
+
     const supabase = createOAuthClient(request, response);
     const { error: exchangeError } = await supabase.auth.exchangeCodeForSession(code);
     if (exchangeError) return response;
@@ -32,21 +43,38 @@ export async function GET(request: NextRequest) {
       await supabase.auth.signOut({ scope: "local" });
       const cleared = clearGuardianSessionCookie();
       response.cookies.set(cleared.name, cleared.value, cleared.options);
+      const clearedPreAuth = clearGuardianPreAuthCookie();
+      response.cookies.set(clearedPreAuth.name, clearedPreAuth.value, clearedPreAuth.options);
       response.headers.set("location", destination("/acesso", "email-nao-confirmado").toString());
       return response;
     }
 
-    const guardian = await getGuardianByEmail(normalizeEmail(user.email));
+    const confirmedEmail = normalizeEmail(user.email);
+    if (confirmedEmail !== preAuthEmail) {
+      await supabase.auth.signOut({ scope: "local" });
+      const cleared = clearGuardianSessionCookie();
+      response.cookies.set(cleared.name, cleared.value, cleared.options);
+      const clearedPreAuth = clearGuardianPreAuthCookie();
+      response.cookies.set(clearedPreAuth.name, clearedPreAuth.value, clearedPreAuth.options);
+      response.headers.set("location", destination("/acesso", "email-diferente").toString());
+      return response;
+    }
+
+    const guardian = await getGuardianByEmail(confirmedEmail);
     await supabase.auth.signOut({ scope: "local" });
     if (!guardian) {
       const cleared = clearGuardianSessionCookie();
       response.cookies.set(cleared.name, cleared.value, cleared.options);
+      const clearedPreAuth = clearGuardianPreAuthCookie();
+      response.cookies.set(clearedPreAuth.name, clearedPreAuth.value, clearedPreAuth.options);
       response.headers.set("location", destination("/acesso", "nao-autorizado").toString());
       return response;
     }
 
     const session = createGuardianSessionCookie(guardian.id);
     response.cookies.set(session.name, session.value, session.options);
+    const clearedPreAuth = clearGuardianPreAuthCookie();
+    response.cookies.set(clearedPreAuth.name, clearedPreAuth.value, clearedPreAuth.options);
     response.headers.set(
       "location",
       destination(guardian.statusPagamento === "pago" ? "/alunos" : "/pagamento-pendente").toString(),

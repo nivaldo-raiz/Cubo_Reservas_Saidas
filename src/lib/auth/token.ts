@@ -1,6 +1,6 @@
 import { createHmac, timingSafeEqual } from "node:crypto";
 
-export type SessionRole = "guardian" | "admin";
+export type SessionRole = "guardian" | "admin" | "guardian-preauth";
 
 interface SessionPayload {
   sub: string;

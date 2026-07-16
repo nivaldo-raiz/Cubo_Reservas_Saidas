@@ -7,6 +7,12 @@ export function parseOAuthProvider(value: string | null): OAuthProvider | null {
 }
 
 export function oauthErrorMessage(code: string | undefined) {
+  if (code === "preautorizacao") {
+    return "Informe e valide seu e-mail antes de continuar com Google ou Microsoft.";
+  }
+  if (code === "email-diferente") {
+    return "O e-mail confirmado pelo provedor é diferente do e-mail informado.";
+  }
   if (code === "nao-autorizado") {
     return "O e-mail confirmado pelo provedor não está na lista de responsáveis autorizados.";
   }

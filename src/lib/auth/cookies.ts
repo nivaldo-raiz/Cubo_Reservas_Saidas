@@ -3,7 +3,9 @@ import { env, requireSecret } from "@/lib/env";
 import { signToken, verifyToken } from "@/lib/auth/token";
 
 const GUARDIAN_COOKIE = "cubo_guardian_session";
+const GUARDIAN_PREAUTH_COOKIE = "cubo_guardian_preauth";
 const ADMIN_COOKIE = "cubo_admin_session";
+const GUARDIAN_PREAUTH_TTL_SECONDS = 10 * 60;
 
 const cookieBase = {
   httpOnly: true,
@@ -28,6 +30,32 @@ export function clearGuardianSessionCookie() {
     value: "",
     options: { ...cookieBase, maxAge: 0 },
   };
+}
+
+export function createGuardianPreAuthCookie(email: string) {
+  const secret = requireSecret(env.guardianSessionSecret, "GUARDIAN_SESSION_SECRET");
+  return {
+    name: GUARDIAN_PREAUTH_COOKIE,
+    value: signToken(email, "guardian-preauth", secret, GUARDIAN_PREAUTH_TTL_SECONDS),
+    options: { ...cookieBase, maxAge: GUARDIAN_PREAUTH_TTL_SECONDS },
+  };
+}
+
+export function clearGuardianPreAuthCookie() {
+  return {
+    name: GUARDIAN_PREAUTH_COOKIE,
+    value: "",
+    options: { ...cookieBase, maxAge: 0 },
+  };
+}
+
+export function readGuardianPreAuthCookie(value: string | undefined) {
+  const secret = requireSecret(env.guardianSessionSecret, "GUARDIAN_SESSION_SECRET");
+  return verifyToken(value, "guardian-preauth", secret)?.sub ?? null;
+}
+
+export function guardianPreAuthCookieName() {
+  return GUARDIAN_PREAUTH_COOKIE;
 }
 
 export async function setGuardianSession(responsavelId: string) {
@@ -61,6 +89,7 @@ export async function readAdminSession() {
 export async function clearGuardianSession() {
   const jar = await cookies();
   jar.delete(GUARDIAN_COOKIE);
+  jar.delete(GUARDIAN_PREAUTH_COOKIE);
 }
 
 export async function clearAdminSession() {

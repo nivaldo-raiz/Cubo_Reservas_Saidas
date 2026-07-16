@@ -1,7 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createGuardianSessionCookie } from "@/lib/auth/cookies";
+import {
+  clearGuardianPreAuthCookie,
+  createGuardianSessionCookie,
+  guardianPreAuthCookieName,
+  readGuardianPreAuthCookie,
+} from "@/lib/auth/cookies";
 import { parseOAuthProvider } from "@/lib/auth/oauth";
 import { env } from "@/lib/env";
+import { getGuardianByEmail } from "@/lib/repository";
 import { createOAuthClient } from "@/lib/supabase/oauth";
 
 function accessUrl(error?: string) {
@@ -12,18 +18,24 @@ function accessUrl(error?: string) {
 
 export async function GET(request: NextRequest) {
   const requestedProvider = request.nextUrl.searchParams.get("provider");
+  const preAuthEmail = readGuardianPreAuthCookie(
+    request.cookies.get(guardianPreAuthCookieName())?.value,
+  );
+  if (!preAuthEmail) return NextResponse.redirect(accessUrl("preautorizacao"));
+
   if (env.demoMode && requestedProvider === "demo") {
-    const pending = request.nextUrl.searchParams.get("account") === "pending";
+    const guardian = await getGuardianByEmail(preAuthEmail);
+    if (!guardian) return NextResponse.redirect(accessUrl("nao-autorizado"));
     const host = request.headers.get("host") ?? request.nextUrl.host;
     const protocol = request.headers.get("x-forwarded-proto") ?? request.nextUrl.protocol.slice(0, -1);
     const demoOrigin = `${protocol}://${host}`;
     const response = NextResponse.redirect(
-      new URL(pending ? "/pagamento-pendente" : "/alunos", demoOrigin),
+      new URL(guardian.statusPagamento === "pago" ? "/alunos" : "/pagamento-pendente", demoOrigin),
     );
-    const session = createGuardianSessionCookie(
-      pending ? "responsavel-demo-pendente" : "responsavel-demo-pago",
-    );
+    const session = createGuardianSessionCookie(guardian.id);
     response.cookies.set(session.name, session.value, session.options);
+    const cleared = clearGuardianPreAuthCookie();
+    response.cookies.set(cleared.name, cleared.value, cleared.options);
     response.headers.set("cache-control", "private, no-store");
     return response;
   }
