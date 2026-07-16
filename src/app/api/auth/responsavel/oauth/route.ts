@@ -24,6 +24,7 @@ export async function GET(request: NextRequest) {
       pending ? "responsavel-demo-pendente" : "responsavel-demo-pago",
     );
     response.cookies.set(session.name, session.value, session.options);
+    response.headers.set("cache-control", "private, no-store");
     return response;
   }
 
