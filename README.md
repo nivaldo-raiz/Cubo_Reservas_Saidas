@@ -1,47 +1,69 @@
 # Cubo Seat Selection
 
-MVP responsivo para escolha antecipada de assentos da viagem NR English & Action. Inclui jornada do responsável, painel administrativo, schema Supabase com RLS, reserva atômica, seed fictício e testes de regras críticas.
+Aplicação Next.js para liberar a escolha de assentos após confirmação de pagamento. O responsável entra por e-mail e OTP; o time de vendas usa uma autenticação administrativa separada.
 
-## Executar localmente
+## Execução local
 
-```bash
+```powershell
 npm install
-copy .env.example .env.local
+Copy-Item .env.example .env.local
 npm run dev
 ```
 
-Abra `http://localhost:3000`. Fluxo fictício: qualquer e-mail válido; OTP `123456`. O admin fechado usa `admin@example.cubo.global` em `/admin-acesso`. `APP_ENV=local` e `DEMO_MODE=true` mantêm a experiência sem dados ou serviços externos.
+Abra `http://localhost:3000`. Com `DEMO_MODE=true`, use:
 
-## Supabase
+- Responsável pago: `familia@example.com`, OTP `123456`.
+- Responsável pendente: `pendente@example.com`, OTP `123456`.
+- Admin: valores definidos em `DEMO_ADMIN_EMAIL` e `DEMO_ADMIN_PASSWORD`.
 
-1. Crie um projeto Supabase e copie `.env.example` para `.env.local`.
-2. Execute `supabase/migrations/0001_initial.sql` no SQL Editor ou via Supabase CLI.
-3. Execute `supabase/seed.sql` somente em desenvolvimento.
-4. Crie previamente o usuário admin no Supabase Auth e vincule seu `auth.users.id` em `admin_profiles`, com papel `super_admin`, `trip_admin` ou `viewer`.
-5. Mantenha `SUPABASE_SERVICE_ROLE_KEY` exclusivamente no servidor.
+O modo demo usa somente dados fictícios em memória. Não deve ser ativado em preview ou produção.
 
-## E-mail
+## Banco Supabase
 
-Em produção, defina `RESEND_API_KEY` e um remetente verificado. A resposta pública de solicitação de OTP é sempre neutra. O modo demo não envia e-mail.
+1. Crie um projeto Supabase.
+2. Configure `NEXT_PUBLIC_SUPABASE_URL` e `SUPABASE_SERVICE_ROLE_KEY` no servidor.
+3. Execute `supabase/migrations/0001_access_and_seats.sql` pelo Supabase CLI ou SQL Editor.
+4. Opcionalmente, execute `supabase/seed.sql` apenas em desenvolvimento.
+5. Defina `DEMO_MODE=false`, `OTP_PEPPER`, `GUARDIAN_SESSION_SECRET`, `ADMIN_SESSION_SECRET`, `RESEND_API_KEY` e `EMAIL_FROM`.
 
-## Qualidade
+A service role nunca é enviada ao navegador. As tabelas têm RLS habilitado e não possuem policies para `anon` ou `authenticated`; todo acesso passa pelos Route Handlers no servidor.
 
-```bash
+## Primeiro admin
+
+Depois da migration, defina as variáveis somente no terminal e execute:
+
+```powershell
+$env:ADMIN_BOOTSTRAP_EMAIL="admin@cubo.global"
+$env:ADMIN_BOOTSTRAP_PASSWORD="uma-senha-forte-com-12-caracteres"
+npm run admin:create
+Remove-Item Env:ADMIN_BOOTSTRAP_EMAIL
+Remove-Item Env:ADMIN_BOOTSTRAP_PASSWORD
+```
+
+A senha é armazenada apenas como hash bcrypt. O login administrativo fica em `/admin-acesso`.
+
+## Importar alunos
+
+No painel `/admin`, envie o arquivo HTML exportado da planilha de alunos. O importador utiliza somente `Aluno`, `Responsável` e `Email Responsável`; CPF, RG, telefones e nascimento não são armazenados. Novos responsáveis entram com pagamento `pendente` e reimportar o mesmo arquivo não duplica registros.
+
+A planilha de professores não é importada neste MVP porque o modelo aprovado não possui entidade de professores nem assentos de equipe.
+
+## Fluxo de acesso
+
+1. A solicitação de OTP sempre retorna uma mensagem neutra, sem revelar se o e-mail existe.
+2. O código é armazenado como HMAC, expira em 10 minutos e é invalidado após uso ou reenvio.
+3. A sessão do responsável fica em cookie assinado `httpOnly` por 30 dias.
+4. O status de pagamento é consultado novamente em toda página ou ação protegida. Desmarcar o pagamento no admin bloqueia o fluxo imediatamente.
+5. A reserva é concluída pela função PostgreSQL `reservar_assento`, com locks e restrições únicas.
+6. Cada checkpoint de documentação insere uma linha própria em `confirmacoes`.
+
+## Verificação
+
+```powershell
 npm run lint
 npm run typecheck
-npm run test
+npm test
 npm run build
 ```
 
-## Vercel preview
-
-Importe o repositório na Vercel, conecte o projeto Supabase pelo Marketplace, configure as variáveis de `.env.example` e use `npm run build`. Cada pull request produzirá um preview. Antes de produção, desative `DEMO_MODE`, verifique domínio/remetente, aplique migrations, revise RLS e textos jurídicos.
-
-## Limitações conscientes do MVP
-
-- As telas funcionam integralmente em modo demonstrativo; a conexão real com Supabase/Resend depende das credenciais do ambiente.
-- Upload binário e PDF nativo ficaram preparados no modelo, mas o MVP usa status administrativo e impressão do navegador.
-- Admin demonstrativo não exige login; a proteção por magic link deve ser ativada com Supabase no ambiente publicado.
-- Termos, privacidade, datas, contatos e configuração real dos ônibus exigem validação do Cubo.
-
-Arquitetura e premissas: `docs/FASE-1-DIAGNOSTICO.md`. Ambientes, contas, Supabase, Resend, Vercel, segurança e rollback: `docs/OPERACAO-E-DEPLOY.md`.
+O formato HTML recebido está suportado. CSV pode ser acrescentado posteriormente, caso o processo operacional passe a exportá-lo nesse formato.

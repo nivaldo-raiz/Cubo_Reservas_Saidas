@@ -10,11 +10,15 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
+    "test:e2e": "playwright test",
+    "admin:create": "node scripts/create-admin.mjs",
     "check": "npm run lint && npm run typecheck && npm run test && npm run build"
   },
   "dependencies": {
     "@supabase/ssr": "latest",
     "@supabase/supabase-js": "latest",
+    "bcryptjs": "latest",
+    "cheerio": "latest",
     "lucide-react": "latest",
     "next": "latest",
     "react": "latest",
@@ -37,5 +41,10 @@
     "tailwindcss": "latest",
     "typescript": "latest",
     "vitest": "latest"
+  },
+  "overrides": {
+    "next": {
+      "postcss": "8.5.19"
+    }
   }
 }
