@@ -12,6 +12,7 @@ interface DemoChildRow {
   id: string;
   nome: string;
   responsavel_id: string;
+  onibus_id: string;
 }
 
 interface DemoBusRow {
@@ -77,13 +78,13 @@ export function createDemoState(): DemoState {
       },
     ],
     criancas: [
-      { id: "crianca-demo-ana", nome: "Ana Oliveira", responsavel_id: "responsavel-demo-pago" },
-      { id: "crianca-demo-lucas", nome: "Lucas Oliveira", responsavel_id: "responsavel-demo-pago" },
-      { id: "crianca-demo-bia", nome: "Beatriz Santos", responsavel_id: "responsavel-demo-pendente" },
+      { id: "crianca-demo-ana", nome: "Ana Oliveira", responsavel_id: "responsavel-demo-pago", onibus_id: "onibus-demo-1" },
+      { id: "crianca-demo-lucas", nome: "Lucas Oliveira", responsavel_id: "responsavel-demo-pago", onibus_id: "onibus-demo-2" },
+      { id: "crianca-demo-bia", nome: "Beatriz Santos", responsavel_id: "responsavel-demo-pendente", onibus_id: "onibus-demo-1" },
     ],
     onibus: [
-      { id: "onibus-demo-1", nome: "Ônibus 1", capacidade: 44 },
-      { id: "onibus-demo-2", nome: "Ônibus 2", capacidade: 44 },
+      { id: "onibus-demo-1", nome: "Ônibus A", capacidade: 44 },
+      { id: "onibus-demo-2", nome: "Ônibus B", capacidade: 44 },
     ],
     assentos: [
       ...makeSeats("onibus-demo-1", 44, [7, 10, 18, 22, 31]),

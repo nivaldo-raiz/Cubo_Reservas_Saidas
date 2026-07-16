@@ -11,11 +11,9 @@ export default async function SeatSelectionPage({
 }) {
   const guardian = await requireGuardian({ paid: true });
   const { criancaId } = await params;
-  const [child, buses] = await Promise.all([
-    getGuardianChild(guardian.id, criancaId),
-    getBusesWithSeats(),
-  ]);
+  const child = await getGuardianChild(guardian.id, criancaId);
   if (!child) notFound();
+  const buses = await getBusesWithSeats(child.onibusId);
 
   return (
     <main>

@@ -24,6 +24,7 @@ interface ChildRow {
   id: string;
   nome: string;
   responsavel_id: string;
+  onibus_id: string;
 }
 
 interface BusRow {
@@ -69,6 +70,7 @@ export class DomainError extends Error {
       | "PAYMENT_REQUIRED"
       | "CHILD_NOT_FOUND"
       | "SEAT_NOT_FOUND"
+      | "BUS_MISMATCH"
       | "SEAT_BLOCKED"
       | "SEAT_TAKEN"
       | "CHILD_ALREADY_SEATED",
@@ -120,6 +122,7 @@ export async function getGuardianChildren(responsavelId: string): Promise<Guardi
           id: child.id,
           nome: child.nome,
           responsavelId: child.responsavel_id,
+          onibusId: child.onibus_id,
           assento: seat && bus
             ? {
                 assentoId: seat.id,
@@ -135,7 +138,7 @@ export async function getGuardianChildren(responsavelId: string): Promise<Guardi
   const supabase = getSupabaseAdmin();
   const { data: childrenData, error: childrenError } = await supabase
     .from("criancas")
-    .select("id,nome,responsavel_id")
+    .select("id,nome,responsavel_id,onibus_id")
     .eq("responsavel_id", responsavelId)
     .order("nome");
   if (childrenError) throwDatabaseError(childrenError.message);
@@ -168,6 +171,7 @@ export async function getGuardianChildren(responsavelId: string): Promise<Guardi
       id: child.id,
       nome: child.nome,
       responsavelId: child.responsavel_id,
+      onibusId: child.onibus_id,
       assento: seat && bus
         ? {
             assentoId: seat.id,
@@ -185,10 +189,10 @@ export async function getGuardianChild(responsavelId: string, childId: string) {
   return children.find((child) => child.id === childId) ?? null;
 }
 
-export async function getBusesWithSeats(): Promise<Bus[]> {
+export async function getBusesWithSeats(onibusId?: string): Promise<Bus[]> {
   if (env.demoMode) {
     const state = getDemoState();
-    return state.onibus.map((bus) => ({
+    return state.onibus.filter((bus) => !onibusId || bus.id === onibusId).map((bus) => ({
       id: bus.id,
       nome: bus.nome,
       capacidade: bus.capacidade,
@@ -214,7 +218,7 @@ export async function getBusesWithSeats(): Promise<Bus[]> {
   if (busesError) throwDatabaseError(busesError.message);
   if (seatsError) throwDatabaseError(seatsError.message);
 
-  return ((busesData ?? []) as BusRow[]).map((bus) => ({
+  return ((busesData ?? []) as BusRow[]).filter((bus) => !onibusId || bus.id === onibusId).map((bus) => ({
     id: bus.id,
     nome: bus.nome,
     capacidade: bus.capacidade,
@@ -244,6 +248,9 @@ export async function reserveSeat(responsavelId: string, childId: string, seatId
       if (!child) throw new DomainError("CHILD_NOT_FOUND", "Criança não encontrada.");
       const seat = state.assentos.find((item) => item.id === seatId);
       if (!seat) throw new DomainError("SEAT_NOT_FOUND", "Assento não encontrado.");
+      if (seat.onibus_id !== child.onibus_id) {
+        throw new DomainError("BUS_MISMATCH", "Esta criança deve escolher um assento no ônibus designado.");
+      }
       const existing = state.assentos.find((item) => item.crianca_id === childId);
       if (existing?.id === seatId) return seat;
       if (existing) {
@@ -267,7 +274,7 @@ export async function reserveSeat(responsavelId: string, childId: string, seatId
   });
   if (!error) return data;
 
-  const code = error.message.match(/(PAYMENT_REQUIRED|CHILD_NOT_FOUND|SEAT_NOT_FOUND|SEAT_BLOCKED|SEAT_TAKEN|CHILD_ALREADY_SEATED)/)?.[1] as DomainError["code"] | undefined;
+  const code = error.message.match(/(PAYMENT_REQUIRED|CHILD_NOT_FOUND|SEAT_NOT_FOUND|BUS_MISMATCH|SEAT_BLOCKED|SEAT_TAKEN|CHILD_ALREADY_SEATED)/)?.[1] as DomainError["code"] | undefined;
   if (code) throw new DomainError(code, error.message);
   throwDatabaseError(error.message);
 }

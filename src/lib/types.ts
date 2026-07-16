@@ -17,6 +17,7 @@ export interface Child {
   id: string;
   nome: string;
   responsavelId: string;
+  onibusId: string;
 }
 
 export interface Seat {
