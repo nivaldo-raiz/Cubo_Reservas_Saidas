@@ -18,7 +18,6 @@
     "@supabase/ssr": "latest",
     "@supabase/supabase-js": "latest",
     "bcryptjs": "latest",
-    "cheerio": "latest",
     "lucide-react": "latest",
     "next": "latest",
     "react": "latest",

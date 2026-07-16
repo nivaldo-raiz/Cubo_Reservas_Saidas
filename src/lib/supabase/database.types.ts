@@ -18,6 +18,16 @@ type ConfirmationRow = {
   confirmado_em: string;
 };
 type AdminRow = { id: string; email: string; senha_hash: string; created_at: string };
+type TeacherRow = {
+  id: string;
+  nome: string;
+  cpf: string | null;
+  sexo: string | null;
+  data_nascimento: string | null;
+  ativo: boolean;
+  created_at: string;
+  updated_at: string;
+};
 type OtpRow = {
   id: string;
   responsavel_id: string;
@@ -69,6 +79,16 @@ export type Database = {
         Row: AdminRow;
         Insert: Pick<AdminRow, "email" | "senha_hash"> & { id?: string; created_at?: string };
         Update: Partial<Omit<AdminRow, "id">>;
+        Relationships: [];
+      };
+      professores: {
+        Row: TeacherRow;
+        Insert: Omit<TeacherRow, "id" | "created_at" | "updated_at"> & {
+          id?: string;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: Partial<Omit<TeacherRow, "id">>;
         Relationships: [];
       };
       codigos_acesso: {
