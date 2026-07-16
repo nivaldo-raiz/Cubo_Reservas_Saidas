@@ -97,20 +97,20 @@ begin
       raise exception 'BUS_ASSIGNMENT_UNEXPECTED_CHILD_COUNT' using errcode = 'P0001';
     end if;
 
-    if (select count(*) from public.criancas c join vinculos_onibus_alunos v on v.nome = c.nome) <> 64
+    if (select count(*) from public.criancas c join vinculos_onibus_alunos v on lower(btrim(v.nome)) = lower(btrim(c.nome))) <> 64
       or exists (
         select 1
           from public.criancas c
-          left join vinculos_onibus_alunos v on v.nome = c.nome
+          left join vinculos_onibus_alunos v on lower(btrim(v.nome)) = lower(btrim(c.nome))
          where v.nome is null
       ) then
       raise exception 'BUS_ASSIGNMENT_NAME_MISMATCH' using errcode = 'P0001';
     end if;
 
     update public.criancas c
-       set onibus_id = v.onibus_id
+      set onibus_id = v.onibus_id
       from vinculos_onibus_alunos v
-     where c.nome = v.nome;
+     where lower(btrim(c.nome)) = lower(btrim(v.nome));
     get diagnostics v_atualizadas = row_count;
 
     if v_atualizadas <> 64 then
