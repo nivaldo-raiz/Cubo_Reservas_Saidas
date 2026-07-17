@@ -8,9 +8,10 @@ async function loginGuardian(page: Page, account: "paid" | "pending" = "paid") {
   await page.getByLabel("E-mail do responsável").fill(
     account === "pending" ? "pendente@example.com" : "familia@example.com",
   );
-  await page.getByRole("button", { name: "Continuar" }).click();
-  await expect(page.getByText("E-mail autorizado:")).toBeVisible();
-  await page.getByRole("link", { name: "Entrar na demonstração" }).click();
+  await page.getByRole("button", { name: "Entrar" }).click();
+  await expect(page).toHaveURL(
+    account === "pending" ? /\/pagamento-pendente$/ : /\/alunos$/,
+  );
 }
 
 test("landing preserva composição desktop e mobile", async ({ page }) => {
@@ -29,9 +30,9 @@ test("e-mail não cadastrado não libera autenticação", async ({ page }) => {
   await page.goto("/acesso");
   await page.waitForTimeout(750);
   await page.getByLabel("E-mail do responsável").fill("nao-cadastrado@example.com");
-  await page.getByRole("button", { name: "Continuar" }).click();
+  await page.getByRole("button", { name: "Entrar" }).click();
   await expect(page.getByText("Você não é um responsável autorizado.", { exact: true })).toBeVisible();
-  await expect(page.getByRole("link", { name: "Entrar na demonstração" })).toHaveCount(0);
+  await expect(page).toHaveURL(/\/acesso$/);
 });
 
 test("responsável pago confirma documentação e assento", async ({ page }) => {
@@ -69,4 +70,10 @@ test("admin altera pagamento", async ({ page }) => {
   const pendingRow = page.getByRole("row").filter({ hasText: "Rafael Santos" });
   await pendingRow.getByRole("button", { name: "Marcar pago" }).click();
   await expect(pendingRow.getByText("Pago", { exact: true })).toBeVisible();
+
+  const downloadPromise = page.waitForEvent("download");
+  await page.getByRole("link", { name: "Exportar planilha" }).click();
+  const download = await downloadPromise;
+  expect(download.suggestedFilename()).toMatch(/^cubo-viagem-\d{4}-\d{2}-\d{2}\.csv$/);
+  expect(await download.path()).toBeTruthy();
 });

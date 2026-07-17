@@ -50,6 +50,47 @@ export interface GuardianListItem extends Guardian {
   criancas: string[];
 }
 
+export interface TripExportStudent {
+  studentId: string;
+  studentName: string;
+  guardianId: string;
+  guardianName: string;
+  guardianEmail: string;
+  paymentStatus: PaymentStatus;
+  guardianCreatedAt: string;
+  busId: string;
+  busName: string;
+  busCapacity: number;
+  seatId: string | null;
+  seatNumber: number | null;
+  confirmations: Record<ConfirmationStage, string[]>;
+}
+
+export interface TripExportTeacher {
+  id: string;
+  name: string;
+  cpf: string | null;
+  gender: string | null;
+  birthDate: string | null;
+  active: boolean;
+}
+
+export interface TripExportBus {
+  id: string;
+  name: string;
+  capacity: number;
+  assignedStudents: number;
+  selectedSeats: number;
+  availableSeats: number;
+  teamSeatNumbers: number[];
+}
+
+export interface TripExportData {
+  students: TripExportStudent[];
+  teachers: TripExportTeacher[];
+  buses: TripExportBus[];
+}
+
 export interface AdminAccount {
   id: string;
   email: string;

@@ -17,10 +17,4 @@ describe("session token", () => {
     const [payload, signature] = token.split(".");
     expect(verifyToken(`${payload}x.${signature}`, "guardian", secret)).toBeNull();
   });
-
-  it("separa a pré-autorização da sessão autenticada", () => {
-    const token = signToken("familia@example.com", "guardian-preauth", secret, 600);
-    expect(verifyToken(token, "guardian-preauth", secret)?.sub).toBe("familia@example.com");
-    expect(verifyToken(token, "guardian", secret)).toBeNull();
-  });
 });

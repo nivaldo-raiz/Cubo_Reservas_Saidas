@@ -16,7 +16,7 @@ const highlights = [
   {
     icon: ShieldCheck,
     title: "Acesso protegido",
-    description: "Identidade confirmada por Google ou Microsoft.",
+    description: "Acesso restrito aos responsáveis cadastrados.",
   },
 ];
 
@@ -60,8 +60,8 @@ export default function HomePage() {
               </p>
             </div>
             <ol>
-              <li>Entre com Google ou Microsoft</li>
-              <li>Confirme o e-mail cadastrado</li>
+              <li>Informe o e-mail cadastrado</li>
+              <li>Confira o aluno e as orientações</li>
               <li>Escolha e confirme o assento</li>
               <li>Receba sua confirmação</li>
             </ol>

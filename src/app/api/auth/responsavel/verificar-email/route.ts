@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import {
-  clearGuardianPreAuthCookie,
-  createGuardianPreAuthCookie,
+  clearGuardianSessionCookie,
+  createGuardianSessionCookie,
 } from "@/lib/auth/cookies";
 import { normalizeEmail } from "@/lib/format";
 import { hasValidOrigin } from "@/lib/http";
@@ -29,15 +29,16 @@ export async function POST(request: Request) {
       { error: "Você não é um responsável autorizado." },
       { status: 403 },
     );
-    const cleared = clearGuardianPreAuthCookie();
-    response.cookies.set(cleared.name, cleared.value, cleared.options);
+    const clearedSession = clearGuardianSessionCookie();
+    response.cookies.set(clearedSession.name, clearedSession.value, clearedSession.options);
     response.headers.set("cache-control", "private, no-store");
     return response;
   }
 
-  const response = NextResponse.json({ ok: true, email });
-  const preAuth = createGuardianPreAuthCookie(email);
-  response.cookies.set(preAuth.name, preAuth.value, preAuth.options);
+  const destino = guardian.statusPagamento === "pago" ? "/alunos" : "/pagamento-pendente";
+  const response = NextResponse.json({ ok: true, email, destino });
+  const session = createGuardianSessionCookie(guardian.id);
+  response.cookies.set(session.name, session.value, session.options);
   response.headers.set("cache-control", "private, no-store");
   return response;
 }

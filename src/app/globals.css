@@ -123,13 +123,8 @@ p { line-height: 1.55; }
 .form-message--error { color: #7a271a; background: #fef3f2; }
 .form-message--info { color: #1849a9; background: #eff8ff; }
 .muted-link { color: var(--purple); font-weight: 700; text-align: center; }
-.oauth-buttons { display: grid; gap: 12px; }
-.oauth-button { color: #202124; border: 1px solid #aeb8c2; background: #fff; }
-.oauth-button:hover { border-color: #6f7b86; background: #f8fafb; }
-.oauth-button--microsoft { color: #fff; border-color: #2f2f2f; background: #2f2f2f; }
-.oauth-button--microsoft:hover { border-color: #111; background: #111; }
-.oauth-note { display: flex; margin: 0; padding: 12px 14px; border-radius: 6px; color: #1849a9; background: #eff8ff; align-items: flex-start; gap: 10px; font-size: 14px; }
-.oauth-note svg { flex: 0 0 auto; margin-top: 1px; }
+.access-note { display: flex; margin: 0; padding: 12px 14px; border-radius: 6px; color: #1849a9; background: #eff8ff; align-items: flex-start; gap: 10px; font-size: 14px; }
+.access-note svg { flex: 0 0 auto; margin-top: 1px; }
 
 .content-shell { width: min(1040px, calc(100% - 48px)); margin: 0 auto; }
 .page-heading { display: flex; margin-bottom: 28px; align-items: flex-end; justify-content: space-between; gap: 24px; }

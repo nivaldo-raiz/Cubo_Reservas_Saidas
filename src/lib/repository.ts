@@ -10,6 +10,7 @@ import type {
   GuardianChild,
   GuardianListItem,
   PaymentStatus,
+  TripExportData,
 } from "@/lib/types";
 
 interface GuardianRow {
@@ -41,6 +42,21 @@ interface SeatRow {
   bloqueado: boolean;
 }
 
+interface ConfirmationRow {
+  responsavel_id: string;
+  etapa: ConfirmationStage;
+  confirmado_em: string;
+}
+
+interface TeacherRow {
+  id: string;
+  nome: string;
+  cpf: string | null;
+  sexo: string | null;
+  data_nascimento: string | null;
+  ativo: boolean;
+}
+
 function mapGuardian(row: GuardianRow): Guardian {
   return {
     id: row.id,
@@ -51,8 +67,98 @@ function mapGuardian(row: GuardianRow): Guardian {
   };
 }
 
-function throwDatabaseError(message: string) {
+function throwDatabaseError(message: string): never {
   throw new Error(`Falha de acesso ao banco: ${message}`);
+}
+
+function buildTripExportData(
+  guardians: GuardianRow[],
+  children: ChildRow[],
+  buses: BusRow[],
+  seats: SeatRow[],
+  confirmations: ConfirmationRow[],
+  teachers: TeacherRow[],
+): TripExportData {
+  const guardianById = new Map(guardians.map((guardian) => [guardian.id, guardian]));
+  const busById = new Map(buses.map((bus) => [bus.id, bus]));
+  const seatByChildId = new Map(
+    seats.filter((seat) => seat.crianca_id).map((seat) => [seat.crianca_id as string, seat]),
+  );
+
+  const students = children.map((child) => {
+    const guardian = guardianById.get(child.responsavel_id);
+    const bus = busById.get(child.onibus_id);
+    if (!guardian || !bus) throwDatabaseError("Aluno sem responsável ou ônibus válido.");
+    const seat = seatByChildId.get(child.id) ?? null;
+    const confirmationDates = (stage: ConfirmationStage) =>
+      confirmations
+        .filter(
+          (confirmation) =>
+            confirmation.responsavel_id === guardian.id && confirmation.etapa === stage,
+        )
+        .map((confirmation) => confirmation.confirmado_em)
+        .sort();
+
+    return {
+      studentId: child.id,
+      studentName: child.nome,
+      guardianId: guardian.id,
+      guardianName: guardian.nome,
+      guardianEmail: guardian.email,
+      paymentStatus: guardian.status_pagamento,
+      guardianCreatedAt: guardian.created_at,
+      busId: bus.id,
+      busName: bus.nome,
+      busCapacity: bus.capacidade,
+      seatId: seat?.id ?? null,
+      seatNumber: seat?.numero ?? null,
+      confirmations: {
+        antes_da_escolha: confirmationDates("antes_da_escolha"),
+        revisao_do_assento: confirmationDates("revisao_do_assento"),
+        confirmacao_final: confirmationDates("confirmacao_final"),
+      },
+    };
+  });
+
+  students.sort((left, right) => {
+    const busOrder = left.busName.localeCompare(right.busName, "pt-BR");
+    if (busOrder !== 0) return busOrder;
+    const seatOrder = (left.seatNumber ?? Number.MAX_SAFE_INTEGER) -
+      (right.seatNumber ?? Number.MAX_SAFE_INTEGER);
+    return seatOrder || left.studentName.localeCompare(right.studentName, "pt-BR");
+  });
+
+  return {
+    students,
+    teachers: teachers
+      .map((teacher) => ({
+        id: teacher.id,
+        name: teacher.nome,
+        cpf: teacher.cpf,
+        gender: teacher.sexo,
+        birthDate: teacher.data_nascimento,
+        active: teacher.ativo,
+      }))
+      .sort((left, right) => left.name.localeCompare(right.name, "pt-BR")),
+    buses: buses
+      .map((bus) => ({
+        id: bus.id,
+        name: bus.nome,
+        capacity: bus.capacidade,
+        assignedStudents: children.filter((child) => child.onibus_id === bus.id).length,
+        selectedSeats: seats.filter(
+          (seat) => seat.onibus_id === bus.id && seat.crianca_id !== null,
+        ).length,
+        availableSeats: seats.filter(
+          (seat) => seat.onibus_id === bus.id && !seat.bloqueado && seat.crianca_id === null,
+        ).length,
+        teamSeatNumbers: seats
+          .filter((seat) => seat.onibus_id === bus.id && seat.bloqueado)
+          .map((seat) => seat.numero)
+          .sort((left, right) => left - right),
+      }))
+      .sort((left, right) => left.name.localeCompare(right.name, "pt-BR")),
+  };
 }
 
 export class DomainError extends Error {
@@ -318,6 +424,53 @@ export async function listGuardians(): Promise<GuardianListItem[]> {
       .filter((child) => child.responsavel_id === row.id)
       .map((child) => child.nome),
   }));
+}
+
+export async function getTripExportData(): Promise<TripExportData> {
+  if (env.demoMode) {
+    const state = getDemoState();
+    return buildTripExportData(
+      state.responsaveis,
+      state.criancas,
+      state.onibus,
+      state.assentos,
+      state.confirmacoes,
+      [],
+    );
+  }
+
+  const supabase = getSupabaseAdmin();
+  const [
+    { data: guardiansData, error: guardiansError },
+    { data: childrenData, error: childrenError },
+    { data: busesData, error: busesError },
+    { data: seatsData, error: seatsError },
+    { data: confirmationsData, error: confirmationsError },
+    { data: teachersData, error: teachersError },
+  ] = await Promise.all([
+    supabase.from("responsaveis").select("id,nome,email,status_pagamento,created_at"),
+    supabase.from("criancas").select("id,nome,responsavel_id,onibus_id"),
+    supabase.from("onibus").select("id,nome,capacidade"),
+    supabase.from("assentos").select("id,onibus_id,numero,crianca_id,bloqueado"),
+    supabase.from("confirmacoes").select("responsavel_id,etapa,confirmado_em"),
+    supabase.from("professores").select("id,nome,cpf,sexo,data_nascimento,ativo"),
+  ]);
+
+  if (guardiansError) throwDatabaseError(guardiansError.message);
+  if (childrenError) throwDatabaseError(childrenError.message);
+  if (busesError) throwDatabaseError(busesError.message);
+  if (seatsError) throwDatabaseError(seatsError.message);
+  if (confirmationsError) throwDatabaseError(confirmationsError.message);
+  if (teachersError) throwDatabaseError(teachersError.message);
+
+  return buildTripExportData(
+    (guardiansData ?? []) as GuardianRow[],
+    (childrenData ?? []) as ChildRow[],
+    (busesData ?? []) as BusRow[],
+    (seatsData ?? []) as SeatRow[],
+    (confirmationsData ?? []) as ConfirmationRow[],
+    (teachersData ?? []) as TeacherRow[],
+  );
 }
 
 export async function updatePaymentStatus(id: string, status: PaymentStatus) {

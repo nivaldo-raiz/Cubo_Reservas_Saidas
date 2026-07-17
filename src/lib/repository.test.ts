@@ -103,4 +103,27 @@ describe("regras de assento e pagamento", () => {
     expect(child?.onibusId).toBe("onibus-demo-2");
     expect(buses.map((bus) => bus.nome)).toEqual(["Ônibus B"]);
   });
+
+  it("reúne todos os dados necessários para a planilha da viagem", async () => {
+    const { getTripExportData, recordConfirmation, reserveSeat } = await import("@/lib/repository");
+    await reserveSeat(
+      "responsavel-demo-pago",
+      "crianca-demo-ana",
+      "onibus-demo-1-assento-3",
+    );
+    await recordConfirmation("responsavel-demo-pago", "confirmacao_final");
+
+    const data = await getTripExportData();
+    const ana = data.students.find((student) => student.studentName === "Ana Oliveira");
+
+    expect(data.students).toHaveLength(3);
+    expect(data.buses).toHaveLength(2);
+    expect(data.buses[0].teamSeatNumbers).toEqual([1, 2, 43, 44]);
+    expect(ana).toMatchObject({
+      guardianEmail: "familia@example.com",
+      busName: "Ônibus A",
+      seatNumber: 3,
+    });
+    expect(ana?.confirmations.confirmacao_final).toHaveLength(1);
+  });
 });

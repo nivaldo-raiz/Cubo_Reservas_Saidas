@@ -1,13 +1,7 @@
-import { OAuthAccess } from "@/components/oauth-access";
+import { GuardianAccess } from "@/components/guardian-access";
 import { SiteHeader } from "@/components/site-header";
-import { env } from "@/lib/env";
 
-export default async function AccessPage({
-  searchParams,
-}: {
-  searchParams: Promise<{ erro?: string }>;
-}) {
-  const { erro } = await searchParams;
+export default function AccessPage() {
   return (
     <main>
       <SiteHeader actionHref="/" actionLabel="Voltar" />
@@ -16,9 +10,9 @@ export default async function AccessPage({
           <p className="eyebrow">Acesso do responsável</p>
           <h1>Informe seu e-mail</h1>
           <p className="panel__lead">
-            Vamos verificar seu cadastro antes de liberar a autenticação com Google ou Microsoft.
+            Use o mesmo e-mail cadastrado para a viagem.
           </p>
-          <OAuthAccess demoMode={env.demoMode} errorCode={erro} />
+          <GuardianAccess />
         </div>
       </section>
     </main>

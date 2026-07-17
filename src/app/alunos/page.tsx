@@ -16,7 +16,7 @@ export default async function StudentsPage() {
         <div className="content-shell">
           <div className="page-heading">
             <div>
-              <p className="eyebrow">Responsável autenticado</p>
+              <p className="eyebrow">Responsável identificado</p>
               <h1>Olá, {guardian.nome}</h1>
               <p>Selecione a criança para continuar a escolha de assento.</p>
             </div>
