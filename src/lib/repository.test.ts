@@ -121,6 +121,7 @@ describe("regras de assento e pagamento", () => {
     expect(data.buses[0].teamSeatNumbers).toEqual([1, 2, 43, 44]);
     expect(ana).toMatchObject({
       guardianEmail: "familia@example.com",
+      guardianPhone: "(21) 99999-1111",
       busName: "Ônibus A",
       seatNumber: 3,
     });

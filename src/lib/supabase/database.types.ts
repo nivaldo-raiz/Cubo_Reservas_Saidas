@@ -4,6 +4,7 @@ type GuardianRow = {
   id: string;
   nome: string;
   email: string;
+  telefone: string | null;
   status_pagamento: "pendente" | "pago";
   created_at: string;
 };
@@ -39,7 +40,11 @@ export type Database = {
     Tables: {
       responsaveis: {
         Row: GuardianRow;
-        Insert: Omit<GuardianRow, "id" | "created_at"> & { id?: string; created_at?: string };
+        Insert: Omit<GuardianRow, "id" | "created_at" | "telefone"> & {
+          id?: string;
+          created_at?: string;
+          telefone?: string | null;
+        };
         Update: Partial<Omit<GuardianRow, "id">>;
         Relationships: [];
       };

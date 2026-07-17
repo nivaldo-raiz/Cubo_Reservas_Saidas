@@ -4,6 +4,7 @@ interface DemoGuardianRow {
   id: string;
   nome: string;
   email: string;
+  telefone: string | null;
   status_pagamento: PaymentStatus;
   created_at: string;
 }
@@ -66,6 +67,7 @@ export function createDemoState(): DemoState {
         id: "responsavel-demo-pago",
         nome: "Mariana Oliveira",
         email: "familia@example.com",
+        telefone: "(21) 99999-1111",
         status_pagamento: "pago",
         created_at: createdAt,
       },
@@ -73,6 +75,7 @@ export function createDemoState(): DemoState {
         id: "responsavel-demo-pendente",
         nome: "Rafael Santos",
         email: "pendente@example.com",
+        telefone: "(21) 99999-2222",
         status_pagamento: "pendente",
         created_at: createdAt,
       },

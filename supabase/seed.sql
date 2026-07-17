@@ -1,8 +1,8 @@
 -- Dados exclusivamente fictícios para desenvolvimento.
-insert into public.responsaveis (id, nome, email, status_pagamento)
+insert into public.responsaveis (id, nome, email, telefone, status_pagamento)
 values
-  ('10000000-0000-4000-8000-000000000001', 'Mariana Oliveira', 'familia@example.com', 'pago'),
-  ('10000000-0000-4000-8000-000000000002', 'Rafael Santos', 'pendente@example.com', 'pendente')
+  ('10000000-0000-4000-8000-000000000001', 'Mariana Oliveira', 'familia@example.com', '(21) 99999-1111', 'pago'),
+  ('10000000-0000-4000-8000-000000000002', 'Rafael Santos', 'pendente@example.com', '(21) 99999-2222', 'pendente')
 on conflict (id) do nothing;
 
 insert into public.onibus (id, nome, capacidade)

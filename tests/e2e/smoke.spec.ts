@@ -1,4 +1,5 @@
 import { expect, test, type Page } from "playwright/test";
+import { readFile } from "node:fs/promises";
 
 test.describe.configure({ mode: "serial" });
 
@@ -75,5 +76,13 @@ test("admin altera pagamento", async ({ page }) => {
   await page.getByRole("link", { name: "Exportar planilha" }).click();
   const download = await downloadPromise;
   expect(download.suggestedFilename()).toMatch(/^cubo-viagem-\d{4}-\d{2}-\d{2}\.csv$/);
-  expect(await download.path()).toBeTruthy();
+  const downloadPath = await download.path();
+  expect(downloadPath).toBeTruthy();
+  const contents = await readFile(downloadPath!, "utf8");
+  expect(contents).toContain('"Telefone do responsável"');
+  expect(contents).toContain('"(21) 99999-1111"');
+  expect(contents).not.toContain('"ID do aluno"');
+  expect(contents).not.toContain('"ID do responsável"');
+  expect(contents).not.toContain('"ID do ônibus"');
+  expect(contents).not.toContain('"ID do assento"');
 });

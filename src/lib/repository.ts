@@ -17,6 +17,7 @@ interface GuardianRow {
   id: string;
   nome: string;
   email: string;
+  telefone: string | null;
   status_pagamento: PaymentStatus;
   created_at: string;
 }
@@ -62,6 +63,7 @@ function mapGuardian(row: GuardianRow): Guardian {
     id: row.id,
     nome: row.nome,
     email: row.email,
+    phone: row.telefone,
     statusPagamento: row.status_pagamento,
     createdAt: row.created_at,
   };
@@ -105,6 +107,7 @@ function buildTripExportData(
       guardianId: guardian.id,
       guardianName: guardian.nome,
       guardianEmail: guardian.email,
+      guardianPhone: guardian.telefone,
       paymentStatus: guardian.status_pagamento,
       guardianCreatedAt: guardian.created_at,
       busId: bus.id,
@@ -185,7 +188,7 @@ export async function getGuardianByEmail(email: string) {
 
   const { data, error } = await getSupabaseAdmin()
     .from("responsaveis")
-    .select("id,nome,email,status_pagamento,created_at")
+    .select("id,nome,email,telefone,status_pagamento,created_at")
     .eq("email", email)
     .maybeSingle();
   if (error) throwDatabaseError(error.message);
@@ -200,7 +203,7 @@ export async function getGuardianById(id: string) {
 
   const { data, error } = await getSupabaseAdmin()
     .from("responsaveis")
-    .select("id,nome,email,status_pagamento,created_at")
+    .select("id,nome,email,telefone,status_pagamento,created_at")
     .eq("id", id)
     .maybeSingle();
   if (error) throwDatabaseError(error.message);
@@ -411,7 +414,7 @@ export async function listGuardians(): Promise<GuardianListItem[]> {
   const supabase = getSupabaseAdmin();
   const [{ data: guardiansData, error: guardiansError }, { data: childrenData, error: childrenError }] =
     await Promise.all([
-      supabase.from("responsaveis").select("id,nome,email,status_pagamento,created_at").order("nome"),
+      supabase.from("responsaveis").select("id,nome,email,telefone,status_pagamento,created_at").order("nome"),
       supabase.from("criancas").select("id,nome,responsavel_id").order("nome"),
     ]);
   if (guardiansError) throwDatabaseError(guardiansError.message);
@@ -448,7 +451,7 @@ export async function getTripExportData(): Promise<TripExportData> {
     { data: confirmationsData, error: confirmationsError },
     { data: teachersData, error: teachersError },
   ] = await Promise.all([
-    supabase.from("responsaveis").select("id,nome,email,status_pagamento,created_at"),
+    supabase.from("responsaveis").select("id,nome,email,telefone,status_pagamento,created_at"),
     supabase.from("criancas").select("id,nome,responsavel_id,onibus_id"),
     supabase.from("onibus").select("id,nome,capacidade"),
     supabase.from("assentos").select("id,onibus_id,numero,crianca_id,bloqueado"),
@@ -485,7 +488,7 @@ export async function updatePaymentStatus(id: string, status: PaymentStatus) {
     .from("responsaveis")
     .update({ status_pagamento: status })
     .eq("id", id)
-    .select("id,nome,email,status_pagamento,created_at")
+    .select("id,nome,email,telefone,status_pagamento,created_at")
     .maybeSingle();
   if (error) throwDatabaseError(error.message);
   return data ? mapGuardian(data as GuardianRow) : null;

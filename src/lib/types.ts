@@ -9,6 +9,7 @@ export interface Guardian {
   id: string;
   nome: string;
   email: string;
+  phone: string | null;
   statusPagamento: PaymentStatus;
   createdAt: string;
 }
@@ -56,6 +57,7 @@ export interface TripExportStudent {
   guardianId: string;
   guardianName: string;
   guardianEmail: string;
+  guardianPhone: string | null;
   paymentStatus: PaymentStatus;
   guardianCreatedAt: string;
   busId: string;
