@@ -18,10 +18,6 @@ export default async function PendingPaymentPage() {
           </div>
           <p className="eyebrow">Acesso aguardando liberação</p>
           <h1>Pagamento pendente</h1>
-          <p className="panel__lead">
-            Olá, {guardian.nome}. Seu acesso ainda está aguardando liberação. Tente
-            novamente mais tarde ou entre em contato com a escola.
-          </p>
           <div className="flow-actions">
             <LogoutButton />
             <a className="button button--primary" href="/pagamento-pendente">Verificar novamente</a>
