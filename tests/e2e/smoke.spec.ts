@@ -57,6 +57,8 @@ test("responsável pendente recebe bloqueio explicativo", async ({ page }) => {
   await loginGuardian(page, "pending");
   await expect(page).toHaveURL(/\/pagamento-pendente$/);
   await expect(page.getByRole("heading", { name: "Pagamento pendente" })).toBeVisible();
+  await expect(page.getByText(/Seu acesso ainda está aguardando liberação/)).toBeVisible();
+  await expect(page.getByText(/A escolha de assento será liberada/)).toHaveCount(0);
 });
 
 test("admin altera pagamento", async ({ page }) => {

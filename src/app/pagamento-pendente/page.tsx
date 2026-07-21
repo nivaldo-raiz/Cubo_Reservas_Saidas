@@ -19,9 +19,8 @@ export default async function PendingPaymentPage() {
           <p className="eyebrow">Acesso aguardando liberação</p>
           <h1>Pagamento pendente</h1>
           <p className="panel__lead">
-            Olá, {guardian.nome}. A escolha de assento será liberada assim que o time de
-            vendas confirmar o pagamento do passeio. Se você já pagou, aguarde a
-            atualização ou entre em contato com a escola.
+            Olá, {guardian.nome}. Seu acesso ainda está aguardando liberação. Tente
+            novamente mais tarde ou entre em contato com a escola.
           </p>
           <div className="flow-actions">
             <LogoutButton />
